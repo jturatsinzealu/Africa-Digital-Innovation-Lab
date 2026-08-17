@@ -1,12 +1,28 @@
 /* ============================================================
    HOME PHOTO SLIDER — auto-advancing photo highlights.
-   Replace the placeholder SVGs in assets/img/slides/ with real
-   lab photos (recommended: 1600x700 JPG), update paths/captions
-   here, and the slider picks them up automatically.
+   To change photos: put images in assets/img/slides/ and update
+   the paths, alt text, and captions below. Add or remove entries
+   freely — the slider adapts automatically.
    ============================================================ */
 window.SLIDES = [
-  { img: "assets/img/slides/slide-1.svg", alt: "Placeholder — replace with a recent lab photo", caption: "[Photo placeholder] Replace with a recent photo of the lab — e.g., the research team at work" },
-  { img: "assets/img/slides/slide-2.svg", alt: "Placeholder — replace with a recent lab photo", caption: "[Photo placeholder] Replace with a photo from a data-collection sprint or field pilot" },
-  { img: "assets/img/slides/slide-3.svg", alt: "Placeholder — replace with a recent lab photo", caption: "[Photo placeholder] Replace with a photo from a workshop, seminar, or student research bootcamp" },
-  { img: "assets/img/slides/slide-4.svg", alt: "Placeholder — replace with a recent lab photo", caption: "[Photo placeholder] Replace with a photo of the ALU Rwanda campus / Kigali Innovation City" }
+  {
+    img: "assets/img/slides/slide-1.jpg",
+    alt: "Students building hardware prototypes in the lab",
+    caption: "Hands-on engineering — students prototyping hardware and embedded systems"
+  },
+  {
+    img: "assets/img/slides/slide-2.jpg",
+    alt: "African Leadership University campus in Kigali",
+    caption: "Our home — African Leadership University, Kigali Innovation City, Rwanda"
+  },
+  {
+    img: "assets/img/slides/slide-3.jpg",
+    alt: "Illustration of a developer working across code, data, and cloud systems",
+    caption: "Software engineering, data, and intelligent systems — the heart of ADIL's work"
+  },
+  {
+    img: "assets/img/slides/slide-4.jpg",
+    alt: "Students pair-programming and a digital health innovation lecture",
+    caption: "Learning and research together — from pair programming to digital health innovation"
+  }
 ];
