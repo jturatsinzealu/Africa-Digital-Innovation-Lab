@@ -10,7 +10,7 @@ window.PEOPLE = {
     {
       name: "Mr. Junior T",
       title: "Founder & Lab Director · Software Engineering Coach and Lecturer, ALU",
-      photo: null,
+      photo: "assets/img/lab-director.jpg",
       bio: "Founder of the Africa Digital Innovation Lab. Leads the lab's research vision, partnerships, and student research programme within the BSE Software Engineering community at ALU's Rwanda Campus.",
       email: "jturatsinze@alueducation.cn",
       focus: ["Software engineering", "Research leadership", "Partnerships"],

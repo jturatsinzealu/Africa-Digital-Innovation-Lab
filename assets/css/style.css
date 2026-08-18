@@ -586,3 +586,70 @@ h3 { font-size: 1.15rem; font-weight: 700; }
   color: var(--gray);
   font-style: italic;
 }
+
+/* ==========================================================================
+   Embedded map (Contact) and Lab Director card (About)
+   ========================================================================== */
+
+/* ---------- Contact: responsive map embed ---------- */
+.map-embed {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 4 / 3;
+  border: 1px solid var(--line);
+  border-top: 3px solid var(--black);
+  border-radius: var(--radius);
+  overflow: hidden;
+  background: var(--panel);
+}
+.map-embed iframe { width: 100%; height: 100%; display: block; border: 0; }
+.map-note { margin-top: 10px; font-size: 0.88rem; font-weight: 700; }
+.map-note a { color: var(--red); }
+@media (max-width: 800px) { .map-embed { aspect-ratio: 3 / 2; } }
+
+/* ---------- About: lead block with the director card alongside ---------- */
+.about-lead {
+  display: grid;
+  grid-template-columns: minmax(0, 1.35fr) minmax(0, 0.65fr);
+  gap: 34px;
+  align-items: start;
+}
+@media (max-width: 860px) { .about-lead { grid-template-columns: 1fr; gap: 24px; } }
+
+.director-card {
+  background: #fff;
+  border: 1px solid var(--line);
+  border-top: 3px solid var(--red);
+  border-radius: var(--radius);
+  overflow: hidden;
+}
+.director-photo {
+  position: relative;
+  aspect-ratio: 1 / 1;
+  background: var(--red);
+  overflow: hidden;
+}
+.director-photo img {
+  width: 100%; height: 100%;
+  object-fit: cover;
+  filter: grayscale(1) contrast(1.12);
+  mix-blend-mode: luminosity;
+  display: block;
+}
+.director-photo::after {
+  content: "";
+  position: absolute; inset: 0;
+  background:
+    radial-gradient(circle at 22% 26%, rgba(255,255,255,0.10), transparent 44%),
+    radial-gradient(circle at 78% 74%, rgba(0,0,0,0.12), transparent 48%);
+  pointer-events: none;
+}
+.director-meta { padding: 18px 20px 22px; }
+.director-meta .k {
+  font-weight: 800; font-size: 0.66rem; letter-spacing: 0.14em;
+  text-transform: uppercase; color: var(--red);
+}
+.director-meta h3 { font-size: 1.25rem; font-weight: 800; margin: 5px 0 4px; }
+.director-meta .role { font-size: 0.88rem; color: var(--gray); line-height: 1.5; }
+.director-meta .bio { font-size: 0.9rem; margin-top: 10px; line-height: 1.6; }
+.director-meta .plinks { margin-top: 12px; display: flex; gap: 14px; flex-wrap: wrap; font-size: 0.88rem; font-weight: 700; }
