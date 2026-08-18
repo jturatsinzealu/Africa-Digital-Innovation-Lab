@@ -1,7 +1,7 @@
 /* ============================================================
-   ADIL — shared layout + page renderers.
+   ADIL, shared layout + page renderers.
    Header (black nav bar) and footer are injected here so every
-   page stays DRY. Page content renders from the files in /data —
+   page stays DRY. Page content renders from the files in /data,
    edit those, not the HTML, for routine updates.
    ============================================================ */
 (function () {
@@ -14,10 +14,11 @@
   header.innerHTML = `
     <div class="header-inner">
       <a class="brand" href="index.html" aria-label="${S.labFullName} home">
+        <span class="brand-logo brand-logo--adil"><img src="assets/img/adil-logo.svg" alt="ADIL logo"></span>
         <span class="brand-logo"><img src="${S.logo}" alt="${S.university} logo"></span>
         <span class="brand-text">
           <span class="brand-lab">${S.labFullName} (${S.labShortName})</span>
-          <span class="brand-uni">${S.department} · ${S.university}, ${S.campus}</span>
+          <span class="brand-uni">Founded by Mr. Junior T · ${S.department} · ${S.university}</span>
         </span>
       </a>
       <button class="nav-toggle" aria-expanded="false" aria-controls="main-nav">MENU</button>
@@ -79,6 +80,12 @@
 
   const el = (id) => document.getElementById(id);
   const esc = (s) => String(s ?? "");
+  const initials = (n) => {
+    const clean = String(n || "").replace(/\[.*?\]/g, "").replace(/[^A-Za-z .]/g, " ").trim();
+    const parts = clean.split(/\s+/).filter(Boolean);
+    if (!parts.length) return "◆";
+    return (parts[0][0] + (parts.length > 1 ? parts[parts.length - 1][0] : "")).toUpperCase();
+  };
 
   /* ============================================================
      AUTO-SLIDING PHOTO STRIP (home)
@@ -129,7 +136,8 @@
   /* ---------- Research theme cards ---------- */
   if (window.RESEARCH && el("research-grid")) {
     el("research-grid").innerHTML = window.RESEARCH.map(t => `
-      <article class="card reveal" id="${t.id}">
+      <article class="card has-art reveal" id="${t.id}">
+        <div class="cardart">${window.CARD_ART ? window.CARD_ART(t.id) : ""}</div>
         <span class="kicker">${esc(t.kicker)} · ${esc(t.status)}</span>
         <h3>${esc(t.title)}</h3>
         <p>${esc(t.summary)}</p>
@@ -139,7 +147,8 @@
   }
   if (window.RESEARCH && el("home-research")) {
     el("home-research").innerHTML = window.RESEARCH.slice(0, 3).map(t => `
-      <article class="card reveal">
+      <article class="card has-art reveal">
+        <div class="cardart">${window.CARD_ART ? window.CARD_ART(t.id) : ""}</div>
         <span class="kicker">${esc(t.kicker)}</span>
         <h3>${esc(t.title)}</h3>
         <p>${esc(t.summary)}</p>
@@ -151,7 +160,8 @@
   const statusPill = s => `<span class="pill pill--${s}">${s}</span>`;
   if (window.PROJECTS && el("home-projects")) {
     el("home-projects").innerHTML = window.PROJECTS.filter(p => p.featured).map(p => `
-      <article class="card reveal">
+      <article class="card has-art reveal">
+        <div class="cardart">${window.CARD_ART ? window.CARD_ART(p.id) : ""}</div>
         <span class="kicker">${esc(p.theme)}</span>
         <h3>${esc(p.title)}</h3>
         <p><strong>${esc(p.subtitle)}.</strong> ${esc(p.problem)}</p>
@@ -170,10 +180,11 @@
       if (!items.length) {
         return status === "proposed" ? "" : `
           <div class="section-head"><h2>${label}</h2>
-          <p class="notice">No ${status} projects are listed yet — entries will appear here as the research programme ${status === "current" ? "launches its first funded projects" : "completes its first project cycles"}.</p></div>`;
+          <p class="notice">No ${status} projects are listed yet, entries will appear here as the research programme ${status === "current" ? "launches its first funded projects" : "completes its first project cycles"}.</p></div>`;
       }
       return `<div class="section-head"><h2>${label}</h2></div>` + items.map(p => `
         <article class="project reveal" id="${p.id}">
+          <div class="projectart">${window.CARD_ART ? window.CARD_ART(p.id) : ""}</div>
           <div class="project-head">
             <h3>${esc(p.title)}</h3>
             ${statusPill(p.status)}
@@ -210,10 +221,13 @@
         <div class="grid grid-3" style="margin-bottom:48px">
           ${items.map(p => `
             <article class="card person reveal">
-              <div class="photo">${p.photo ? `<img src="${p.photo}" alt="Portrait of ${esc(p.name)}">` : "◆"}</div>
+              <div class="photo">${p.photo
+                ? `<img src="${p.photo}" alt="Portrait of ${esc(p.name)}">`
+                : `<span class="initials">${initials(p.name)}</span>`}</div>
               <h3>${esc(p.name)}</h3>
               <p class="role">${esc(p.title)}</p>
               <p class="bio">${esc(p.bio)}</p>
+              ${(p.focus && p.focus.length) ? `<div class="tagrow">${p.focus.map(f => `<span class="tag">${esc(f)}</span>`).join("")}</div>` : ""}
               <div class="plinks">
                 ${p.email ? `<a href="mailto:${p.email}">Email</a>` : ""}
                 ${(p.links || []).map(l => `<a href="${l.href}">${esc(l.label)}</a>`).join("")}
@@ -276,8 +290,25 @@
           <h3>${esc(t.track)}</h3>
           ${t.open ? '<span class="pill pill--open">Open</span>' : '<span class="pill pill--completed">Not currently open</span>'}
         </div>
+        ${t.who ? `<p class="join-who">Who this is for: ${esc(t.who)}</p>` : ""}
         <p>${esc(t.text)}</p>
-        <p class="join-cta">→ ${esc(t.cta)} <a href="mailto:${S.email}">${S.email}</a></p>
+        <div class="join-cols">
+          ${(t.criteria && t.criteria.length) ? `
+          <div class="join-col">
+            <h4>What you need before you write to us</h4>
+            <ul class="ticks">${t.criteria.map(c => `<li>${esc(c)}</li>`).join("")}</ul>
+          </div>` : ""}
+          ${(t.documents && t.documents.length) ? `
+          <div class="join-col">
+            <h4>Documents to attach to your email</h4>
+            <ul class="docs">${t.documents.map(d => `<li>${esc(d)}</li>`).join("")}</ul>
+          </div>` : ""}
+        </div>
+        <p class="join-cta">
+          Email <a href="mailto:${S.email}?subject=${encodeURIComponent(t.subject || t.track)}">${S.email}</a>
+          with the subject line <strong>${esc(t.subject || t.track)}</strong>, attaching every document listed above as a single PDF where possible.
+        </p>
+        ${t.note ? `<p class="join-note">${esc(t.note)}</p>` : ""}
       </div>`).join("");
   }
 

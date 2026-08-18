@@ -1,108 +1,1445 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Africa Digital Innovation Lab (ADIL) | African Leadership University</title>
-  <meta name="description" content="Africa Digital Innovation Lab (ADIL) is an academic research and innovation lab at African Leadership University (ALU), Rwanda — using software engineering, AI, data, and human-centered technology to address real-world challenges across Africa.">
-  <link rel="stylesheet" href="assets/css/style.css">
-  <link rel="icon" href="assets/img/favicon.svg" type="image/svg+xml">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Africa Digital Innovation Lab (ADIL) | African Leadership University</title>
+<meta name="description" content="Africa Digital Innovation Lab (ADIL) is an academic research and innovation lab at African Leadership University, Rwanda. Software engineering, AI, data and human-centered technology for Africa's most pressing challenges.">
+<link rel="icon" href="assets/img/favicon.svg" type="image/svg+xml">
+<style>
+/* ==========================================================================
+   ADIL - Interactive 3D landing, "living lab" edition (single file).
+   Environment: mossy organic arcs in grey-green fog, white blossoms,
+   drifting spores, butterfly on the branch. Wireframe-first scan reveal.
+   Original implementation; ADIL branding and content.
+   ========================================================================== */
+:root {
+  --ink: #171b14;            /* near-black green for dark UI */
+  --white: #ffffff;
+  --red: #d0202e;            /* ALU red, primary CTA only */
+  --red-dark: #a91622;
+  --sage: #6d7566;           /* fog / sky */
+  --moss: #52703c;
+  --moss-deep: #2f4527;
+  --blossom: #eef3e2;
+  --gold: #e3c14f;           /* butterfly / fireflies */
+  --scan: #d9f0b4;           /* scan band */
+  --card-ink: #20241c;
+  --font: "Helvetica Neue", Helvetica, Arial, sans-serif;
+  --mono: "Courier New", monospace;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+html, body { height: 100%; }
+body {
+  font-family: var(--font);
+  background: var(--sage);
+  color: #f2f4ee;
+  overflow-x: hidden;
+  -webkit-font-smoothing: antialiased;
+}
+a { color: inherit; text-decoration: none; }
+button { font-family: var(--font); cursor: pointer; }
+
+/* ---------- 3D stage ---------- */
+#stage { position: fixed; inset: 0; z-index: 0; }
+#stage canvas { display: block; }
+
+/* atmosphere: near-black top fading into the sage fog, glowing fog dome
+   behind the branches, dark vignette at the very bottom - like the reference */
+.veil {
+  position: fixed; inset: 0; z-index: 1; pointer-events: none;
+  background:
+    repeating-linear-gradient(90deg, rgba(255,255,255,0.022) 0 1px, transparent 1px 170px),
+    linear-gradient(180deg, rgba(13,16,11,0.94) 0%, rgba(13,16,11,0.62) 16%, rgba(13,16,11,0.22) 34%, transparent 52%),
+    radial-gradient(56% 40% at 50% 62%, rgba(228,236,208,0.30), rgba(228,236,208,0.10) 45%, transparent 72%),
+    linear-gradient(0deg, rgba(13,16,11,0.55) 0%, transparent 18%);
+}
+
+/* ---------- Navigation: slim black bar + breadcrumb strip (reference) ---------- */
+.nav {
+  position: fixed; top: 0; left: 0; right: 0;
+  z-index: 40;
+  display: flex; align-items: center; justify-content: space-between; gap: 16px;
+  padding: 9px 22px;
+  background: rgba(8, 10, 6, 0.92);
+  border-bottom: 1px solid rgba(255,255,255,0.07);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+}
+.brand { display: flex; align-items: center; gap: 9px; }
+.brand-logo { background: #fff; border-radius: 4px; padding: 4px 7px; display: flex; align-items: center; }
+.brand-logo.adil { background: transparent; padding: 0; }
+.brand-logo img { height: 22px; width: auto; display: block; }
+.brand-logo.adil img { height: 28px; }
+.brand-text { display: flex; flex-direction: column; line-height: 1.25; }
+.brand-lab { font-weight: 700; color: #fff; font-size: 0.85rem; white-space: nowrap; letter-spacing: 0.01em; }
+.brand-sub { font-family: var(--mono); font-size: 0.52rem; letter-spacing: 0.14em; text-transform: uppercase; color: #9aa38c; white-space: nowrap; }
+.nav-links { display: flex; list-style: none; flex-wrap: nowrap; align-items: center; gap: 2px; position: relative; }
+.nav-ind {
+  position: absolute; top: 3px; bottom: 3px; left: 0; width: 0;
+  background: #fff; border-radius: 999px;
+  opacity: 0; z-index: 0;
+  transition: left 0.3s cubic-bezier(0.22, 1, 0.36, 1), width 0.3s cubic-bezier(0.22, 1, 0.36, 1), opacity 0.2s ease;
+}
+.nav-links li { position: relative; z-index: 1; }
+.nav-links a.lit { color: #171b14 !important; font-weight: 700; opacity: 1; }
+.nav-links a {
+  display: block;
+  padding: 8px 9px;
+  font-size: 0.76rem;
+  font-weight: 500;
+  color: #dfe3d6;
+  white-space: nowrap;
+  opacity: 0.9;
+  border-radius: 999px;
+}
+.nav-links a:hover { color: #fff; opacity: 1; }
+.nav-links a.active { padding: 8px 14px; }
+.crumbs {
+  position: fixed; top: 47px; left: 0; right: 0; z-index: 39;
+  display: flex; justify-content: center; gap: 26px;
+  padding: 8px 16px;
+  background: rgba(8, 10, 6, 0.82);
+  border-bottom: 1px solid rgba(255,255,255,0.05);
+  backdrop-filter: blur(8px);
+}
+.crumbs a {
+  font-family: var(--mono);
+  font-size: 0.58rem; letter-spacing: 0.2em; text-transform: uppercase;
+  color: #9aa38c;
+}
+.crumbs a:hover, .crumbs a.on { color: #fff; }
+.crumbs a.on::before { content: "› "; color: var(--scan); }
+@media (max-width: 760px) { .crumbs { display: none; } }
+.nav-toggle {
+  display: none;
+  background: none; border: 1px solid rgba(255,255,255,0.25); border-radius: 999px;
+  padding: 7px 13px; color: #fff;
+  font-weight: 700; font-size: 0.66rem; letter-spacing: 0.1em;
+}
+@media (max-width: 1240px) {
+  .nav-toggle { display: inline-block; }
+  .nav-links {
+    display: none;
+    position: fixed; top: 52px; left: 12px; right: 12px;
+    flex-direction: column; align-items: stretch;
+    background: rgba(8,10,6,0.96);
+    border: 1px solid rgba(255,255,255,0.12);
+    border-radius: 14px;
+    padding: 10px;
+  }
+  .nav-links.open { display: flex; }
+  .nav-links a { padding: 12px 12px; font-size: 0.86rem; }
+  .nav-links a.active { background: #fff; color: #171b14; font-weight: 700; border-radius: 8px; }
+  .nav-ind { display: none; }
+}
+
+/* ---------- Entrance choreography: elements rise in after the intro ---------- */
+.rise { opacity: 0; transform: translateY(26px); transition: opacity 0.9s ease, transform 0.9s cubic-bezier(0.22, 1, 0.36, 1); }
+.rise.go { opacity: 1; transform: none; }
+@media (prefers-reduced-motion: reduce) { .rise { opacity: 1; transform: none; } }
+
+/* ---------- Hero: headline left · paragraph+CTA middle · stats right ---------- */
+.hero {
+  position: relative;
+  z-index: 10;
+  min-height: 100svh;
+  display: grid;
+  grid-template-columns: minmax(0, 0.95fr) minmax(0, 0.62fr) minmax(0, 0.85fr);
+  align-items: start;
+  gap: 40px;
+  padding: 21vh 6vw 90px;
+  pointer-events: none;
+}
+.hero a, .hero button, .hero .card { pointer-events: auto; }
+.hero-copy { max-width: 640px; }
+.eyebrow {
+  font-family: var(--mono);
+  font-size: 0.6rem;
+  letter-spacing: 0.26em;
+  text-transform: uppercase;
+  color: #b9c2a8;
+  display: inline-block;
+  margin-bottom: 20px;
+}
+.hero h1 {
+  font-size: clamp(2.2rem, 4.6vw, 3.9rem);
+  font-weight: 200;                    /* thin, like the reference */
+  line-height: 1.16;
+  letter-spacing: -0.012em;
+  color: #fff;
+}
+.hero h1 b { font-weight: 500; }
+.hero-mid { padding-top: 3.2rem; }
+.hero .sub {
+  font-size: 0.9rem;
+  line-height: 1.75;
+  color: #d6dcc9;
+  max-width: 34ch;
+}
+.hero-note {
+  display: inline-block;
+  margin-top: 16px;
+  font-family: var(--mono);
+  font-size: 0.58rem;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: #ffffff;
+  line-height: 2;
+  background: rgba(14, 18, 11, 0.72);      /* stronger scrim: text sits over pale fog */
+  border-left: 2px solid var(--scan);
+  padding: 9px 14px;
+  border-radius: 6px;
+  text-shadow: 0 1px 6px rgba(0,0,0,0.55);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+}
+.hero-stats {
+  position: absolute;
+  right: 3.5vw; top: 21vh;
+  display: flex; flex-direction: column; gap: 30px;
+  text-align: left;
+}
+.stat { display: flex; gap: 9px; align-items: flex-start; }
+.stat .ic { color: #cfd8bd; font-size: 0.85rem; line-height: 1.2; }
+.stat .sl {
+  font-family: var(--mono);
+  font-size: 0.55rem; letter-spacing: 0.18em; text-transform: uppercase;
+  color: #9aa38c; display: block; margin-bottom: 2px;
+}
+.stat .sv { color: #fff; font-weight: 600; font-size: 0.88rem; }
+.hero-actions { margin-top: 22px; display: flex; gap: 12px; flex-wrap: wrap; align-items: center; }
+.btn {
+  display: inline-block;
+  font-weight: 700; font-size: 0.8rem;
+  letter-spacing: 0.06em; text-transform: uppercase;
+  padding: 13px 26px;
+  border-radius: 999px;
+  border: 1px solid transparent;
+  transition: transform 0.15s ease, background 0.15s ease, border-color 0.15s ease, color 0.15s ease;
+}
+.btn:active { transform: scale(0.97); }
+.btn-primary { background: rgba(23,27,20,0.92); color: #fff; border-color: rgba(255,255,255,0.14); position: relative; overflow: hidden; }
+.btn-primary::after {
+  content: "";
+  position: absolute; top: -20%; bottom: -20%; left: 0; width: 55%;
+  background: linear-gradient(105deg, transparent, rgba(255,244,210,0.4), transparent);
+  transform: translateX(-160%) skewX(-14deg);
+  transition: transform 0.7s ease;
+  pointer-events: none;
+}
+.btn-primary:hover { background: #000; }
+.btn-primary:hover::after { transform: translateX(320%) skewX(-14deg); }
+.btn-ghost { border-color: rgba(255,255,255,0.45); color: #fff; background: rgba(255,255,255,0.05); }
+.btn-ghost:hover { background: #fff; color: var(--ink); }
+.hero-loc {
+  margin-top: 30px;
+  font-family: var(--mono);
+  font-size: 0.62rem;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: #d5dcc6;
+  opacity: 0.85;
+}
+
+/* ---------- Circular play button with pulsing ring (reference) ---------- */
+.playbtn {
+  position: absolute;
+  left: 11vw; top: 56vh;
+  z-index: 12;
+  width: 62px; height: 62px;
+  border-radius: 50%;
+  border: 1px solid rgba(255,255,255,0.35);
+  background: rgba(23,27,20,0.4);
+  backdrop-filter: blur(6px);
+  color: #fff;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 1rem;
+}
+.playbtn::before {
+  content: "";
+  position: absolute; inset: -1px;
+  border-radius: 50%;
+  border: 1px solid rgba(238,243,226,0.5);
+  animation: playring 2.6s ease-out infinite;
+}
+@keyframes playring { from { transform: scale(1); opacity: 0.8; } to { transform: scale(1.9); opacity: 0; } }
+.playbtn .lbl {
+  position: absolute; left: 76px; top: 50%; transform: translateY(-50%);
+  font-family: var(--mono); font-size: 0.56rem; letter-spacing: 0.18em; text-transform: uppercase;
+  color: #d5dcc6; white-space: nowrap;
+  opacity: 0; transition: opacity 0.25s ease;
+}
+.playbtn:hover .lbl { opacity: 1; }
+@media (max-width: 980px) { .playbtn { display: none; } }
+
+/* ---------- Floating white card cluster, bottom-right - reference style ---------- */
+.hero-card-dock {
+  position: absolute;
+  right: 15vw; top: 15.5vh;
+  z-index: 12;
+  width: min(240px, 74vw);
+}
+.hero-card-dock .card { width: 100%; }
+.hero-card2 {
+  position: absolute;
+  right: 5vw; top: 47vh;
+  z-index: 13;
+  width: min(208px, 68vw);
+}
+.hero-card2 .card { width: 100%; }
+.hero-card2 .card .thumb { height: 92px; }
+.card {
+  width: min(292px, 80vw);
+  background: rgba(255,255,255,0.94);
+  border-radius: 18px;
+  overflow: hidden;
+  box-shadow: 0 24px 70px -22px rgba(15,18,12,0.55);
+  color: var(--card-ink);
+  transform: translate3d(0,0,0);
+  transition: box-shadow 0.2s ease;
+}
+.card:hover { box-shadow: 0 28px 80px -20px rgba(15,18,12,0.7); }
+.card .thumb { position: relative; height: 122px; background: linear-gradient(140deg, #5b6b4a, #3c4a33); overflow: hidden; }
+.card .thumb img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.card .meta { padding: 13px 15px 16px; position: relative; }
+.card .k {
+  font-family: var(--mono);
+  font-size: 0.58rem; letter-spacing: 0.2em; text-transform: uppercase;
+  color: #8a9179;
+}
+.card .t { font-weight: 700; font-size: 1.05rem; color: var(--card-ink); margin-top: 4px; }
+.card .d { font-size: 0.79rem; color: #565e4c; margin-top: 4px; line-height: 1.55; }
+.card .go {
+  position: absolute; right: 12px; bottom: 12px;
+  width: 30px; height: 30px; border-radius: 50%;
+  background: var(--ink); color: #fff;
+  display: flex; align-items: center; justify-content: center;
+  font-weight: 700; font-size: 0.95rem;
+}
+/* scan-in effect on card images while loading */
+.thumb::after {
+  content: "";
+  position: absolute; inset: 0;
+  background:
+    repeating-linear-gradient(0deg, rgba(217,240,180,0.22) 0 2px, transparent 2px 6px),
+    linear-gradient(180deg, transparent 30%, rgba(217,240,180,0.4) 50%, transparent 70%);
+  background-size: 100% 100%, 100% 240%;
+  animation: scanwipe 1.1s linear infinite;
+  opacity: 1;
+  transition: opacity 0.6s ease;
+  pointer-events: none;
+}
+.thumb.loaded::after { opacity: 0; animation-play-state: paused; }
+@keyframes scanwipe { from { background-position: 0 0, 0 -120%; } to { background-position: 0 0, 0 120%; } }
+
+/* stat chips: frosted white */
+.chips { display: flex; flex-direction: column; gap: 10px; margin-bottom: 4px; align-items: flex-end; }
+.chip {
+  display: flex; align-items: center; gap: 9px;
+  font-size: 0.76rem; color: #3d4433;
+  background: rgba(255,255,255,0.82);
+  padding: 7px 14px;
+  border-radius: 999px;
+  box-shadow: 0 10px 30px -14px rgba(15,18,12,0.5);
+  backdrop-filter: blur(8px);
+}
+.chip b { color: var(--ink); font-size: 0.85rem; }
+.chip .dot { width: 7px; height: 7px; border-radius: 50%; background: var(--moss); box-shadow: 0 0 0 3px rgba(82,112,60,0.25); }
+
+/* ---------- Scene controls: dark pills ---------- */
+.controls {
+  position: fixed; left: 16px; bottom: 16px; z-index: 30;
+  display: flex; gap: 8px; flex-wrap: wrap;
+}
+.ctl {
+  font-family: var(--mono);
+  font-size: 0.6rem; letter-spacing: 0.14em; text-transform: uppercase;
+  color: #e7eadf;
+  background: rgba(23,27,20,0.82);
+  border: 1px solid rgba(255,255,255,0.16);
+  border-radius: 999px;
+  padding: 9px 14px;
+  backdrop-filter: blur(8px);
+  transition: border-color 0.15s ease, color 0.15s ease, background 0.15s ease;
+}
+.ctl:hover { border-color: var(--scan); color: #fff; }
+.ctl[aria-pressed="true"] { background: rgba(217,240,180,0.16); border-color: rgba(217,240,180,0.5); }
+.ctl b { color: var(--scan); }
+
+.hint {
+  position: fixed; right: 18px; bottom: 18px; z-index: 30;
+  font-family: var(--mono); font-size: 0.6rem; letter-spacing: 0.16em;
+  text-transform: uppercase; color: #ffffff;
+  text-align: right; line-height: 1.9; opacity: 0.9;
+  text-shadow: 0 1px 8px rgba(0,0,0,0.65);
+  pointer-events: none;
+}
+.scroll-cue {
+  position: absolute; left: 50%; bottom: 16px; transform: translateX(-50%);
+  z-index: 12; color: #ffffff; text-shadow: 0 1px 8px rgba(0,0,0,0.6);
+  font-family: var(--mono); font-size: 0.58rem; letter-spacing: 0.22em; text-transform: uppercase;
+  animation: bob 2.4s ease-in-out infinite; opacity: 0.8;
+  pointer-events: none;
+}
+@keyframes bob { 0%,100% { transform: translate(-50%, 0); } 50% { transform: translate(-50%, 7px); } }
+
+/* ---------- Intro overlay: field-scan boot, olive theme ---------- */
+#intro {
+  position: fixed; inset: 0; z-index: 100;
+  background: #23281e;
+  display: flex; align-items: center; justify-content: center;
+  transition: opacity 1s ease;
+}
+#intro.done { opacity: 0; pointer-events: none; }
+.intro-box { width: min(520px, 86vw); text-align: center; position: relative; }
+.intro-grid {
+  position: absolute; inset: -40vh -30vw;
+  background:
+    linear-gradient(rgba(217,240,180,0.06) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(217,240,180,0.06) 1px, transparent 1px);
+  background-size: 44px 44px;
+  mask-image: radial-gradient(60% 60% at 50% 50%, #000 30%, transparent 75%);
+  -webkit-mask-image: radial-gradient(60% 60% at 50% 50%, #000 30%, transparent 75%);
+  animation: gridpulse 3s ease-in-out infinite;
+  pointer-events: none;
+}
+@keyframes gridpulse { 0%,100% { opacity: 0.5; } 50% { opacity: 1; } }
+.intro-ring {
+  width: 130px; height: 130px; margin: 0 auto 26px;
+  border-radius: 50%;
+  border: 1px solid rgba(217,240,180,0.45);
+  position: relative;
+}
+.intro-ring::before, .intro-ring::after {
+  content: "";
+  position: absolute; inset: 0; border-radius: 50%;
+  border: 1px solid rgba(217,240,180,0.6);
+  animation: ringout 2.2s ease-out infinite;
+}
+.intro-ring::after { animation-delay: 1.1s; }
+@keyframes ringout { from { transform: scale(0.4); opacity: 1; } to { transform: scale(2.1); opacity: 0; } }
+.intro-ring .sweep {
+  position: absolute; inset: 8px; border-radius: 50%;
+  background: conic-gradient(from 0deg, rgba(217,240,180,0.5), transparent 24%);
+  animation: sweep 1.6s linear infinite;
+}
+@keyframes sweep { to { transform: rotate(360deg); } }
+.intro-name { font-weight: 700; font-size: 1.02rem; letter-spacing: 0.08em; color: #fff; }
+.intro-line {
+  font-family: var(--mono); font-size: 0.64rem; letter-spacing: 0.22em; text-transform: uppercase;
+  color: #aab596; margin-top: 10px; min-height: 1.2em;
+}
+.intro-bar { height: 2px; background: rgba(255,255,255,0.12); margin-top: 20px; border-radius: 2px; overflow: hidden; }
+.intro-bar i { display: block; height: 100%; width: 0%; background: linear-gradient(90deg, #8fae63, var(--scan)); transition: width 0.25s ease; }
+.intro-pct { font-family: var(--mono); font-size: 0.64rem; color: var(--scan); letter-spacing: 0.22em; margin-top: 9px; }
+.intro-skip {
+  position: absolute; left: 50%; transform: translateX(-50%); bottom: -66px;
+  background: none; border: 1px solid rgba(255,255,255,0.25); color: #c6cfb4;
+  border-radius: 999px; font-family: var(--mono); font-size: 0.58rem;
+  letter-spacing: 0.2em; text-transform: uppercase; padding: 8px 16px;
+}
+.intro-skip:hover { border-color: #fff; color: #fff; }
+
+/* ---------- Below the fold ---------- */
+.after { position: relative; z-index: 10; background: #fff; color: #171b14; }
+.after-inner { max-width: 1180px; margin: 0 auto; padding: 12px 24px 72px; }
+.after h2 {
+  font-weight: 800; font-size: clamp(1.4rem, 2.6vw, 1.9rem);
+  color: #171b14; position: relative; padding-bottom: 10px; margin-bottom: 8px;
+}
+.after h2::after { content: ""; position: absolute; left: 0; bottom: 0; width: 54px; height: 4px; background: var(--red); }
+.after .lede { color: #333; max-width: 70ch; line-height: 1.7; }
+.after-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; margin-top: 30px; }
+.after-card {
+  border: 1px solid #ddd; border-top: 3px solid #171b14;
+  border-radius: 6px; padding: 22px; background: #fff;
+  transition: border-color 0.15s ease;
+}
+.after-card:hover { border-top-color: var(--red); }
+.after-card .k { font-weight: 800; font-size: 0.68rem; letter-spacing: 0.12em; text-transform: uppercase; color: #6b7280; }
+.after-card h3 { font-weight: 800; font-size: 1.1rem; color: #171b14; margin: 5px 0 6px; }
+.after-card p { font-size: 0.92rem; color: #333; line-height: 1.6; }
+.after-card .go2 { display: inline-block; margin-top: 12px; font-weight: 800; font-size: 0.85rem; color: var(--red); }
+/* ---------- Identity block: lab name, ALU lockup, motto (previous design) ---------- */
+.identity { background: #fff; color: #171b14; position: relative; z-index: 10; }
+.identity-inner { max-width: 1180px; margin: 0 auto; padding: 60px 24px 10px; }
+.identity h2 {
+  font-weight: 800;
+  font-size: clamp(1.5rem, 3.2vw, 2.35rem);
+  color: #111;
+  letter-spacing: -0.01em;
+  padding: 0; margin: 0;
+}
+.identity h2::after { display: none; }
+.identity .dept {
+  color: #1a3f7a; font-weight: 800; font-size: 1rem; line-height: 1.5; margin-top: 8px;
+}
+.identity-lockup { display: flex; align-items: center; gap: 18px; margin-top: 24px; flex-wrap: wrap; }
+.identity-lockup img { height: 62px; width: auto; }
+.identity-lockup .wordmark {
+  border-left: 2px solid #1a3f7a;
+  padding-left: 18px;
+  color: #1a3f7a;
+  font-weight: 800;
+  font-size: 1.02rem;
+  line-height: 1.4;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+}
+.identity-lockup .wordmark span {
+  display: block; font-weight: 700; font-size: 0.8rem; letter-spacing: 0.07em; color: #2b5288;
+}
+.motto { background: #fff; color: #111; position: relative; z-index: 10; }
+.motto-inner { max-width: 1180px; margin: 0 auto; padding: 30px 24px 62px; border-top: 1px solid #e3e3e3; margin-top: 30px; }
+.motto h3 {
+  font-weight: 800;
+  font-size: clamp(1.7rem, 4.4vw, 3.2rem);
+  line-height: 1.15;
+  text-align: center;
+  color: #111;
+  letter-spacing: -0.015em;
+}
+@media (max-width: 640px) {
+  .identity-lockup .wordmark { border-left: none; padding-left: 0; }
+}
+
+/* ---------- CTA band (previous design, unchanged) ---------- */
+.cta-band { background: #000; color: #eee; padding: 54px 0; position: relative; z-index: 10; }
+.cta-inner { max-width: 1180px; margin: 0 auto; padding: 0 24px; }
+.cta-band .eyebrow2 { font-weight: 800; font-size: 0.78rem; letter-spacing: 0.14em; text-transform: uppercase; color: #f2b6bd; display: inline-block; margin-bottom: 0.7rem; }
+.cta-band h2 { color: #fff; max-width: 26ch; font-weight: 800; font-size: clamp(1.4rem, 2.6vw, 1.9rem); }
+.cta-band p { margin: 0.9rem 0 1.6rem; max-width: 62ch; color: #ccc; }
+.cta-band .btn-red { display: inline-block; font-weight: 800; font-size: 0.88rem; letter-spacing: 0.04em; text-transform: uppercase; padding: 12px 22px; border-radius: 4px; background: var(--red); color: #fff; }
+.cta-band .btn-red:hover { background: var(--red-dark); }
+
+/* ---------- Footer (previous design - UNCHANGED) ---------- */
+.imigongo {
+  height: 14px;
+  background:
+    repeating-linear-gradient(135deg, #c8102e 0 10px, transparent 10px 20px),
+    repeating-linear-gradient(45deg, #0b1f3a 0 10px, #faf9f6 10px 20px);
+  opacity: 0.95;
+  position: relative; z-index: 10;
+}
+.site-footer { background: #0b1f3a; color: #aeb8c8; font-size: 0.9rem; position: relative; z-index: 10; }
+.footer-inner { max-width: 1180px; margin: 0 auto; padding: 44px 24px 30px; display: grid; grid-template-columns: 1.4fr 1fr 1fr; gap: 30px; }
+@media (max-width: 800px) { .footer-inner { grid-template-columns: 1fr; } }
+.site-footer h4 { color: #fff; font-size: 0.8rem; letter-spacing: 0.1em; text-transform: uppercase; margin-bottom: 12px; font-weight: 800; }
+.site-footer a { color: #d5dbe5; }
+.site-footer ul { list-style: none; }
+.site-footer li { margin-bottom: 7px; }
+.footer-bottom { border-top: 1px solid rgba(255,255,255,0.12); padding: 16px 24px; max-width: 1180px; margin: 0 auto; display: flex; justify-content: space-between; gap: 12px; flex-wrap: wrap; font-size: 0.8rem; color: #7f8ca0; }
+
+.after-foot {
+  border-top: 1px solid #ddd; margin-top: 46px; padding-top: 18px;
+  display: flex; justify-content: space-between; gap: 12px; flex-wrap: wrap;
+  font-size: 0.8rem; color: #6b7280;
+}
+
+@media (max-width: 980px) {
+  .hero { grid-template-columns: 1fr; padding-top: 96px; gap: 26px; align-content: start; }
+  .hero-mid { padding-top: 0; }
+  .hero-stats { position: static; flex-direction: row; flex-wrap: wrap; gap: 26px; }
+  .hero-card-dock, .hero-card2 { position: static; margin-top: 14px; width: min(290px, 86vw); }
+  .card { width: 100%; }
+  .after-grid { grid-template-columns: 1fr; }
+  .hint { display: none; }
+}
+/* page-leave transition: fade through the fog, content sinks away */
+.fadeveil {
+  position: fixed; inset: 0; z-index: 200;
+  background: radial-gradient(62% 62% at 50% 55%, #7d8573, #49513f 82%);
+  opacity: 0; pointer-events: none;
+  transition: opacity 0.5s ease;
+}
+body.pagefade .fadeveil { opacity: 1; pointer-events: auto; }
+body.pagefade .rise { opacity: 0 !important; transform: translateY(-16px) !important; transition: opacity 0.4s ease, transform 0.4s ease !important; }
+body.pagefade .nav, body.pagefade .crumbs, body.pagefade .controls, body.pagefade .hint { opacity: 0; transition: opacity 0.4s ease; }
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation: none !important; transition: none !important; }
+  .scroll-cue { display: none; }
+}
+.no3d {
+  position: fixed; inset: 0; z-index: 0;
+  background:
+    radial-gradient(900px 500px at 70% 20%, rgba(143,174,99,0.35), transparent 60%),
+    linear-gradient(160deg, #566049, #3c4433);
+}
+</style>
 </head>
-<body data-page="index.html">
+<body>
 
-  <!-- White masthead: lab identity left, ALU logo right -->
-  <section class="masthead">
-    <div class="masthead-inner">
-      <div class="masthead-title">
-        <h1>Africa Digital Innovation Lab (ADIL)</h1>
-        <p class="sub">Software Engineering<br>African Leadership University, Rwanda Campus</p>
+<div id="intro" role="status" aria-label="Loading the ADIL environment">
+  <div class="intro-grid"></div>
+  <div class="intro-box">
+    <div class="intro-ring"><div class="sweep"></div></div>
+    <div class="intro-name">AFRICA DIGITAL INNOVATION LAB</div>
+    <div class="intro-line" id="introLine">INITIALIZING ENVIRONMENT</div>
+    <div class="intro-bar"><i id="introBar"></i></div>
+    <div class="intro-pct" id="introPct">0%</div>
+    <button class="intro-skip" id="introSkip">Skip intro</button>
+  </div>
+</div>
+
+<div id="stage" aria-hidden="true"></div>
+<div class="veil"></div>
+<div class="fadeveil" aria-hidden="true"></div>
+
+<nav class="nav" aria-label="Main">
+  <a class="brand" href="index.html">
+    <span class="brand-logo adil"><img src="assets/img/adil-logo.svg" alt="ADIL logo"
+      onerror="this.parentElement.style.display='none'"></span>
+    <span class="brand-logo"><img src="assets/img/alu-logo.png" alt="African Leadership University logo"
+      onerror="this.parentElement.style.display='none'"></span>
+    <span class="brand-text">
+      <span class="brand-lab">ADIL</span>
+      <span class="brand-sub">Founded by Mr. Junior T</span>
+    </span>
+  </a>
+  <button class="nav-toggle" id="navToggle" aria-expanded="false" aria-controls="navLinks">MENU</button>
+  <ul class="nav-links" id="navLinks">
+    <li><a href="index.html" class="active" aria-current="page">Home</a></li>
+    <li><a href="about.html">About</a></li>
+    <li><a href="research.html">Research</a></li>
+    <li><a href="projects.html">Projects</a></li>
+    <li><a href="people.html">People</a></li>
+    <li><a href="publications.html">Publications</a></li>
+    <li><a href="news.html">News</a></li>
+    <li><a href="partners.html">Partners</a></li>
+    <li><a href="join.html">Join Us</a></li>
+    <li><a href="contact.html">Contact</a></li>
+  </ul>
+</nav>
+<div class="crumbs" aria-label="Sections">
+  <a class="on" href="index.html">Overview</a>
+  <a href="research.html">Research</a>
+  <a href="projects.html">Projects</a>
+  <a href="people.html">People</a>
+  <a href="join.html">Join</a>
+</div>
+
+<header class="hero">
+  <div class="hero-copy rise">
+    <span class="eyebrow">Africa Digital Innovation Lab (ADIL) · African Leadership University</span>
+    <h1>Step into the living lab<br>for Africa's digital future.</h1>
+  </div>
+
+  <div class="hero-mid rise">
+    <p class="sub">We turn African challenges into evidence-based digital solutions, through software engineering, AI, data, and human-centered technology, with students at the center.</p>
+    <div class="hero-actions">
+      <a class="btn btn-primary" href="research.html">Explore the work</a>
+    </div>
+    <p class="hero-note">Open to students · partners · funders<br>Kigali Innovation City, Rwanda</p>
+  </div>
+
+  <div class="hero-stats rise">
+    <div class="stat"><span class="ic">✳</span><span><span class="sl">Research themes</span><span class="sv">6 active directions</span></span></div>
+    <div class="stat"><span class="ic">◉</span><span><span class="sl">Flagship projects</span><span class="sv">2 in motion</span></span></div>
+  </div>
+
+  <a class="playbtn rise" href="about.html" aria-label="About the lab">
+    ▶
+    <span class="lbl">The lab in 60 seconds: film coming soon</span>
+  </a>
+
+  <div class="hero-card-dock rise">
+    <a class="card" href="research.html" data-depth="18">
+      <div class="thumb"><img src="assets/img/slides/slide-4.jpg" alt="Students researching together at ADIL"
+        onload="this.parentElement.classList.add('loaded')"
+        onerror="this.parentElement.classList.add('loaded'); this.remove()"></div>
+      <div class="meta">
+        <span class="k">Our ethos</span>
+        <div class="t">Let evidence lead.</div>
+        <span class="go">→</span>
       </div>
-      <div class="masthead-logo">
-        <img src="assets/img/alu-logo.png" alt="African Leadership University logo">
-        <div class="wordmark">African Leadership University<span>Rwanda Campus · Kigali Innovation City</span></div>
+    </a>
+  </div>
+
+  <div class="hero-card2 rise">
+    <a class="card" href="projects.html" data-depth="30">
+      <div class="thumb"><img src="assets/img/slides/slide-2.jpg" alt="African Leadership University campus, Kigali"
+        onload="this.parentElement.classList.add('loaded')"
+        onerror="this.parentElement.classList.add('loaded'); this.remove()"></div>
+      <div class="meta">
+        <span class="k">Flagship 01</span>
+        <div class="t">KinyaVoice</div>
+        <span class="go">→</span>
       </div>
+    </a>
+  </div>
+
+  <span class="scroll-cue">Scroll · Enter the lab</span>
+</header>
+
+<div class="controls" role="group" aria-label="Scene controls">
+  <button class="ctl" id="ctlScan"><b>▸</b> Scan pulse</button>
+  <button class="ctl" id="ctlWire" aria-pressed="false"><b>▸</b> Wireframe</button>
+  <button class="ctl" id="ctlPart" aria-pressed="true"><b>▸</b> Particles</button>
+  <button class="ctl" id="ctlMotion" aria-pressed="true"><b>▸</b> Motion</button>
+</div>
+<div class="hint">The branches: research growing<br>The scan: evidence in progress</div>
+
+<section class="identity">
+  <div class="identity-inner">
+    <h2>Africa Digital Innovation Lab (ADIL)</h2>
+    <p class="dept">Software Engineering<br>African Leadership University, Rwanda Campus</p>
+    <div class="identity-lockup">
+      <img src="assets/img/alu-logo.png" alt="African Leadership University logo"
+        onerror="this.style.display='none'">
+      <div class="wordmark">African Leadership University<span>Rwanda Campus · Kigali Innovation City</span></div>
     </div>
-  </section>
+  </div>
+</section>
 
-  <!-- Big bold headline quote -->
-  <section class="quoteline">
-    <div class="container">
-      <h2>&ldquo;Dedicated to Digital Innovation for Africa&rdquo;</h2>
+<section class="motto">
+  <div class="motto-inner">
+    <h3>&ldquo;Dedicated to Digital Innovation for Africa&rdquo;</h3>
+  </div>
+</section>
+
+<section class="after">
+  <div class="after-inner">
+    <h2>Continue into the lab</h2>
+    <p class="lede">ADIL brings together students, lecturers, researchers, industry, governments, NGOs, and international research institutions to transform African challenges into practical, evidence-based digital solutions.</p>
+    <div class="after-grid">
+      <a class="after-card" href="research.html">
+        <span class="k">Research</span>
+        <h3>Six themes, one thread</h3>
+        <p>Language AI, software engineering for low-resource contexts, digital health, climate-smart agriculture, sensing, and responsible computing.</p>
+        <span class="go2">Research themes →</span>
+      </a>
+      <a class="after-card" href="projects.html">
+        <span class="k">Projects</span>
+        <h3>What we are building first</h3>
+        <p>KinyaVoice and ImyakaAI lead a founding portfolio where every project names its beneficiary, its dataset, and its measure of success.</p>
+        <span class="go2">All projects →</span>
+      </a>
+      <a class="after-card" href="join.html">
+        <span class="k">Join us</span>
+        <h3>Students at the center</h3>
+        <p>Research assistants, engineers, data scientists, UX researchers, project leads, and founders - the lab grows through its people.</p>
+        <span class="go2">Opportunities →</span>
+      </a>
     </div>
-  </section>
+  </div>
+</section>
 
-  <!-- Auto-sliding photo strip -->
-  <section class="slider-wrap" aria-label="Lab photo highlights">
-    <div class="slider-label">Lab Highlights</div>
-    <div class="slider" id="photo-slider"></div>
-  </section>
+<section class="cta-band">
+  <div class="cta-inner">
+    <span class="eyebrow2">Collaborate</span>
+    <h2>Researchers, partners, funders: help us build this.</h2>
+    <p>We are actively seeking research collaborators, industry and government partners, and funding for our founding projects. If our mission overlaps with yours, we would like to hear from you.</p>
+    <a class="btn-red" href="contact.html">Start a conversation</a>
+  </div>
+</section>
 
-  <!-- Intro -->
-  <section class="section">
-    <div class="container">
-      <div class="section-head reveal">
-        <span class="eyebrow">Welcome</span>
-        <h2>About the lab</h2>
-        <p class="lead">Africa Digital Innovation Lab (ADIL) is an academic research and innovation lab based at African Leadership University (ALU), Rwanda, within the BSE — Software Engineering community. ADIL focuses on using software engineering, artificial intelligence, data, digital systems, and human-centered technology to address real-world challenges across Africa.</p>
-        <p class="lead">Our lab brings together students, lecturers, researchers, industry partners, governments, NGOs, and international research institutions to transform African challenges into practical, evidence-based digital solutions.</p>
-      </div>
-      <p><a class="btn btn-outline" href="about.html">More about ADIL</a></p>
+<footer class="site-footer">
+  <div class="imigongo" aria-hidden="true"></div>
+  <div class="footer-inner">
+    <div>
+      <h4>Africa Digital Innovation Lab</h4>
+      <p>Digital innovation research for Africa's most pressing challenges.<br>BSE Software Engineering<br>African Leadership University, Rwanda Campus</p>
     </div>
-  </section>
-
-  <!-- Featured research -->
-  <section class="section section--alt">
-    <div class="container">
-      <div class="section-head reveal">
-        <span class="eyebrow">Featured research</span>
-        <h2>Research themes</h2>
-        <p class="lead">Our work sits at the intersection of software engineering, AI and machine learning, data science, human-computer interaction, and responsible, inclusive technology — engineered for the realities of African deployment.</p>
-      </div>
-      <div class="grid grid-3" id="home-research"></div>
-      <p class="mt-3"><a class="btn btn-outline" href="research.html">All research themes</a></p>
+    <div>
+      <h4>Visit</h4>
+      <ul>
+        <li><a href="index.html">Home</a></li>
+        <li><a href="about.html">About</a></li>
+        <li><a href="research.html">Research</a></li>
+        <li><a href="projects.html">Projects</a></li>
+        <li><a href="people.html">People</a></li>
+        <li><a href="publications.html">Publications</a></li>
+      </ul>
     </div>
-  </section>
-
-  <!-- Flagship projects -->
-  <section class="section">
-    <div class="container">
-      <div class="section-head reveal">
-        <span class="eyebrow">Flagship projects</span>
-        <h2>What we are building first</h2>
-        <p class="lead">Our founding portfolio pairs each research question with a named beneficiary, a measurable outcome, and an open dataset the wider ecosystem can build on.</p>
-      </div>
-      <div class="grid grid-3" id="home-projects"></div>
-      <p class="mt-3"><a class="btn btn-outline" href="projects.html">All projects</a></p>
+    <div>
+      <h4>Contact</h4>
+      <ul>
+        <li><a href="mailto:jturatsinze@alueducation.cn">jturatsinze@alueducation.cn</a></li>
+        <li>Bumbogo, Kigali Innovation City, Kigali, Rwanda</li>
+        <li><a href="https://www.alueducation.com" target="_blank" rel="noopener">African Leadership University</a></li>
+        <li><a href="https://www.kigaliinnovationcity.com" target="_blank" rel="noopener">Kigali Innovation City</a></li>
+      </ul>
     </div>
-  </section>
+  </div>
+  <div class="footer-bottom">
+    <span>© <span id="yr2"></span> Africa Digital Innovation Lab, African Leadership University. Established 2026.</span>
+    <span>Built for GitHub Pages · content lives in <code>/data</code></span>
+  </div>
+</footer>
 
-  <!-- News -->
-  <section class="section section--alt">
-    <div class="container">
-      <div class="section-head reveal">
-        <span class="eyebrow">News</span>
-        <h2>From the lab</h2>
-      </div>
-      <div id="home-news"></div>
-      <p class="mt-3"><a class="btn btn-outline" href="news.html">All news</a></p>
-    </div>
-  </section>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script>
 
-  <!-- CTA -->
-  <section class="cta-band">
-    <div class="container reveal">
-      <span class="eyebrow eyebrow--light">Collaborate</span>
-      <h2>Researchers, partners, funders — help us build this.</h2>
-      <p>We are actively seeking research collaborators, industry and government partners, and funding for our founding projects. If our mission overlaps with yours, we would like to hear from you.</p>
-      <a class="btn btn-primary" href="contact.html">Start a conversation</a>
-    </div>
-  </section>
+/* ============================================================
+   ADIL "living lab" environment (original implementation).
+   Mossy organic arcs in grey-green fog, white blossoms, drifting
+   spores + gold fireflies, butterfly perched on the main branch.
+   Intro: Death-Stranding-inspired reveal - branches appear as
+   wireframe first, then fill with moss, outward from the center.
+   ============================================================ */
+(function () {
+  "use strict";
 
-  <script src="data/site.js"></script>
-  <script src="data/slides.js"></script>
-  <script src="data/research.js"></script>
-  <script src="data/projects.js"></script>
-  <script src="data/news.js"></script>
-  <script src="assets/js/main.js"></script>
+  var reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  var isMobile = window.innerWidth < 760;
+  var yr2 = document.getElementById("yr2"); if (yr2) yr2.textContent = new Date().getFullYear();
+
+  /* ---------- nav toggle ---------- */
+  var navToggle = document.getElementById("navToggle");
+  var navLinks = document.getElementById("navLinks");
+  navToggle.addEventListener("click", function () {
+    var open = navLinks.classList.toggle("open");
+    navToggle.setAttribute("aria-expanded", String(open));
+  });
+
+  /* ---------- sliding white pill indicator (desktop nav) ---------- */
+  var navActiveLink = null;
+  (function navIndicator() {
+    if (!navLinks || !navLinks.appendChild || !navLinks.querySelectorAll) return;
+    var ind = document.createElement("span");
+    ind.className = "nav-ind";
+    navLinks.appendChild(ind);
+    var links = navLinks.querySelectorAll("a");
+    function move(el) {
+      if (!el || !el.offsetWidth) return;
+      ind.style.opacity = "1";
+      ind.style.left = el.offsetLeft + "px";
+      ind.style.width = el.offsetWidth + "px";
+      for (var i = 0; i < links.length; i++) links[i].classList.remove("lit");
+      el.classList.add("lit");
+    }
+    for (var i = 0; i < links.length; i++) {
+      (function (a) {
+        if (a.classList && a.classList.contains && a.classList.contains("active")) navActiveLink = a;
+        a.addEventListener("mouseenter", function () { move(a); });
+      })(links[i]);
+    }
+    navLinks.addEventListener("mouseleave", function () { move(navActiveLink); });
+    setTimeout(function () { move(navActiveLink); }, 80);
+    window.addEventListener("resize", function () { move(navActiveLink); });
+  })();
+
+  /* ---------- page-leave transition: fade through the fog ---------- */
+  var leaving = false;
+  (function pageTransitions() {
+    var all = document.querySelectorAll ? document.querySelectorAll('a[href$=".html"]') : [];
+    function leave(href) {
+      if (reduced || !document.body || !document.body.classList) {
+        if (window.location) window.location.href = href;
+        return;
+      }
+      leaving = true;
+      document.body.classList.add("pagefade");
+      setTimeout(function () { if (window.location) window.location.href = href; }, 520);
+    }
+    for (var i = 0; i < all.length; i++) {
+      (function (a) {
+        a.addEventListener("click", function (e) {
+          var href = a.getAttribute && a.getAttribute("href");
+          if (!href || href.indexOf("http") === 0) return;                       // external: default
+          if (e && (e.metaKey || e.ctrlKey || e.shiftKey || e.button)) return;   // new-tab etc.: default
+          if (e && e.preventDefault) e.preventDefault();
+          leave(href);
+        });
+      })(all[i]);
+    }
+  })();
+
+  /* ---------- intro overlay ---------- */
+  var intro = document.getElementById("intro");
+  var introBar = document.getElementById("introBar");
+  var introPct = document.getElementById("introPct");
+  var introLine = document.getElementById("introLine");
+  var introDone = false;
+  var sceneAPI = { startReveal: null, pendingReveal: false };
+  var lines = [
+    "INITIALIZING ENVIRONMENT",
+    "SCANNING TERRAIN STRUCTURE",
+    "GROWING BRANCH GEOMETRY",
+    "SEEDING BLOSSOM FIELD",
+    "ENVIRONMENT READY"
+  ];
+  function endIntro() {
+    if (introDone) return;
+    introDone = true;
+    intro.classList.add("done");
+    if (sceneAPI.startReveal) sceneAPI.startReveal();
+    else sceneAPI.pendingReveal = true;
+    // staggered entrance: headline -> paragraph -> stats -> play button -> cards
+    var risers = document.querySelectorAll(".rise");
+    for (var ri = 0; ri < risers.length; ri++) {
+      risers[ri].style.transitionDelay = (0.15 + ri * 0.14) + "s";
+      risers[ri].classList.add("go");
+    }
+    setTimeout(function () { if (intro.parentNode) intro.remove(); }, 1100);
+  }
+  document.getElementById("introSkip").addEventListener("click", endIntro);
+  if (reduced) {
+    endIntro();
+  } else {
+    var p = 0, li = 0;
+    var introTimer = setInterval(function () {
+      p = Math.min(100, p + 3 + Math.random() * 9);
+      introBar.style.width = p + "%";
+      introPct.textContent = Math.floor(p) + "%";
+      var target = Math.min(lines.length - 1, Math.floor(p / 25));
+      if (target !== li) { li = target; introLine.textContent = lines[li]; }
+      if (p >= 100) { clearInterval(introTimer); setTimeout(endIntro, 420); }
+    }, 130);
+  }
+
+  /* ---------- WebGL availability ---------- */
+  function webglOK() {
+    try {
+      var c = document.createElement("canvas");
+      return !!(window.WebGLRenderingContext && (c.getContext("webgl") || c.getContext("experimental-webgl")));
+    } catch (e) { return false; }
+  }
+  var stage = document.getElementById("stage");
+  if (typeof THREE === "undefined" || !webglOK()) {
+    stage.className = "no3d";
+    var cs = document.querySelector(".controls"); if (cs) cs.style.display = "none";
+    var ht = document.querySelector(".hint"); if (ht) ht.style.display = "none";
+    return;
+  }
+
+  /* ---------- renderer / scene / camera ---------- */
+  var FOG = new THREE.Color(0x606856);
+  var renderer = new THREE.WebGLRenderer({ antialias: !isMobile, alpha: false, powerPreference: "high-performance" });
+  renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, isMobile ? 1.5 : 2));
+  renderer.setSize(window.innerWidth, window.innerHeight);
+  renderer.setClearColor(FOG, 1);
+  stage.appendChild(renderer.domElement);
+
+  var scene = new THREE.Scene();
+  scene.fog = new THREE.Fog(FOG.getHex(), 15, 48);
+
+  var camera = new THREE.PerspectiveCamera(52, window.innerWidth / window.innerHeight, 0.1, 200);
+  var camBase = new THREE.Vector3(0, 3.4, 17);
+  camera.position.copy(camBase);
+  var camLook = new THREE.Vector3(0, 1.4, -6);
+
+  scene.add(new THREE.AmbientLight(0xdde3cf, 0.9));
+  var sun = new THREE.DirectionalLight(0xfff4dd, 0.5);
+  sun.position.set(-8, 18, 10);
+  scene.add(sun);
+
+  /* ---------- tiny value noise ---------- */
+  function n3(x, y, z) {
+    return Math.sin(x * 1.7 + Math.sin(y * 2.3)) * Math.cos(z * 1.3 + Math.sin(x * 0.7)) * 0.5 +
+           Math.sin(x * 3.9 + z * 2.7) * Math.cos(y * 3.1) * 0.3 +
+           Math.sin((x + y + z) * 6.3) * 0.2;
+  }
+
+  /* ---------- moss shader (fog + reveal + scan built in) ---------- */
+  var uni = {
+    uTime:      { value: 0 },
+    uScanStart: { value: -100 },
+    uScanSpeed: { value: 9.0 },
+    uReveal:    { value: reduced ? 500.0 : 0.0 },
+    uOrigin:    { value: new THREE.Vector3(0, 0, -5) },
+    uFogColor:  { value: FOG },
+    uFogNear:   { value: 15.0 },
+    uFogFar:    { value: 48.0 },
+    uDeep:      { value: new THREE.Color(0x2c4023) },
+    uMid:       { value: new THREE.Color(0x577544) },
+    uTop:       { value: new THREE.Color(0x93b06a) },
+    uScanCol:   { value: new THREE.Color(0xd9f0b4) },
+    uWireHold:  { value: 0.0 }
+  };
+  var mossVert = [
+    "varying vec3 vW; varying vec3 vN; varying float vDist;",
+    "void main() {",
+    "  vW = (modelMatrix * vec4(position, 1.0)).xyz;",
+    "  vN = normalize(mat3(modelMatrix) * normal);",
+    "  vec4 mv = modelViewMatrix * vec4(position, 1.0);",
+    "  vDist = -mv.z;",
+    "  gl_Position = projectionMatrix * mv;",
+    "}"
+  ].join("\n");
+  var mossFrag = [
+    "uniform float uTime, uScanStart, uScanSpeed, uReveal, uFogNear, uFogFar, uWireHold;",
+    "uniform vec3 uOrigin, uFogColor, uDeep, uMid, uTop, uScanCol;",
+    "varying vec3 vW; varying vec3 vN; varying float vDist;",
+    "float hash(vec3 p){ return fract(sin(dot(p, vec3(127.1, 311.7, 74.7))) * 43758.5453); }",
+    "void main() {",
+    "  float up = clamp(vN.y * 0.5 + 0.5, 0.0, 1.0);",
+    "  vec3 col = mix(uDeep, uMid, up);",
+    "  col = mix(col, uTop, smoothstep(0.62, 1.0, up));",
+    "  // mossy speckle",
+    "  float sp = hash(floor(vW * 7.0));",
+    "  col *= 0.88 + 0.24 * sp;",
+    "  // soft top light",
+    "  col += vec3(0.05, 0.06, 0.03) * smoothstep(0.5, 1.0, vN.y);",
+    "  // scan band brightens the moss",
+    "  float d = distance(vW, uOrigin);",
+    "  float r = (uTime - uScanStart) * uScanSpeed;",
+    "  float band = (1.0 - smoothstep(0.0, 2.6, abs(d - r))) * (1.0 - smoothstep(40.0, 60.0, r));",
+    "  col = mix(col, uScanCol, band * 0.8);",
+    "  // reveal: solid fades in behind the wireframe front",
+    "  float solid = 1.0 - smoothstep(uReveal - 8.0, uReveal, d);",
+    "  solid *= (1.0 - uWireHold * 0.85);  // wireframe mode: moss goes ghostly",
+    "  // fog",
+    "  float f = smoothstep(uFogNear, uFogFar, vDist);",
+    "  col = mix(col, uFogColor, f);",
+    "  gl_FragColor = vec4(col, solid);",
+    "}"
+  ].join("\n");
+  var mossMat = new THREE.ShaderMaterial({
+    uniforms: uni, vertexShader: mossVert, fragmentShader: mossFrag, transparent: true
+  });
+  var wireFrag = [
+    "uniform float uTime, uScanStart, uScanSpeed, uReveal, uFogNear, uFogFar, uWireHold;",
+    "uniform vec3 uOrigin, uFogColor, uScanCol;",
+    "varying vec3 vW; varying float vDist;",
+    "void main() {",
+    "  float d = distance(vW, uOrigin);",
+    "  if (d > uReveal) discard;             // wireframe grows outward first",
+    "  float solid = 1.0 - smoothstep(uReveal - 8.0, uReveal, d);",
+    "  float a = mix(mix(0.85, 0.13, solid), 0.9, uWireHold);  // lines stay faintly visible after the reveal",
+    "  float r = (uTime - uScanStart) * uScanSpeed;",
+    "  float band = (1.0 - smoothstep(0.0, 2.6, abs(d - r))) * (1.0 - smoothstep(40.0, 60.0, r));",
+    "  a += band * 0.55;",
+    "  vec3 col = mix(uScanCol, uFogColor, smoothstep(uFogNear, uFogFar, vDist) * 0.7);",
+    "  gl_FragColor = vec4(col, clamp(a, 0.0, 1.0));",
+    "}"
+  ].join("\n");
+  var wireVert = [
+    "varying vec3 vW; varying float vDist;",
+    "void main() {",
+    "  vW = (modelMatrix * vec4(position, 1.0)).xyz;",
+    "  vec4 mv = modelViewMatrix * vec4(position, 1.0);",
+    "  vDist = -mv.z;",
+    "  gl_Position = projectionMatrix * mv;",
+    "}"
+  ].join("\n");
+  var wireMat = new THREE.ShaderMaterial({
+    uniforms: uni, vertexShader: wireVert, fragmentShader: wireFrag,
+    wireframe: true, transparent: true, depthWrite: false
+  });
+
+  /* ---------- organic arcs (branches) ---------- */
+  var blossomPos = [];
+  function makeBranch(pts, radius, seg, rad) {
+    var curve = new THREE.CatmullRomCurve3(pts.map(function (p) { return new THREE.Vector3(p[0], p[1], p[2]); }));
+    var geo = new THREE.TubeGeometry(curve, seg, radius, rad, false);
+    // lumpy moss displacement along normals
+    var pos = geo.attributes.position, nor = geo.attributes.normal;
+    for (var i = 0; i < pos.count; i++) {
+      var x = pos.getX(i), y = pos.getY(i), z = pos.getZ(i);
+      var amp = radius * 0.34;
+      var k = n3(x * 0.9, y * 0.9, z * 0.9) * amp + n3(x * 2.4, y * 2.4, z * 2.4) * amp * 0.4;
+      pos.setXYZ(i, x + nor.getX(i) * k, y + nor.getY(i) * k, z + nor.getZ(i) * k);
+      // blossoms grow on upward-facing moss
+      if (nor.getY(i) > 0.55 && Math.random() < (isMobile ? 0.035 : 0.06)) {
+        blossomPos.push(x + nor.getX(i) * (k + 0.06), y + nor.getY(i) * (k + 0.07), z + nor.getZ(i) * (k + 0.06));
+      }
+    }
+    geo.computeVertexNormals();
+    var solid = new THREE.Mesh(geo, mossMat);
+    var wire = new THREE.Mesh(geo, wireMat);
+    scene.add(solid); scene.add(wire);
+    return curve;
+  }
+  var SEG = isMobile ? 90 : 150;
+  var RAD = isMobile ? 12 : 18;
+  // main arc: sweeps across the frame, crest right-of-center (the perch)
+  var mainCurve = makeBranch(
+    [[-24, -12, -6], [-12, -1.5, -4], [-2, 2.6, -5], [7, 1.2, -3.5], [17, -12, -1]],
+    1.35, SEG, RAD);
+  // tall back arc: fades into fog
+  makeBranch(
+    [[-20, -13, -18], [-10, 1.5, -16], [0, 5.2, -18], [9, 1.0, -16], [18, -13, -15]],
+    1.7, Math.round(SEG * 0.8), Math.round(RAD * 0.8));
+  // foreground trunk: rises out of frame bottom-right, like the reference
+  makeBranch(
+    [[10, -14, 8], [11.5, -6, 6], [13.5, 1, 4.5], [17, 9, 3]],
+    2.1, Math.round(SEG * 0.6), RAD);
+  // small foreground left nub
+  makeBranch(
+    [[-16, -14, 4], [-13, -7.5, 3], [-9.5, -10.5, 1], [-6, -15, 0]],
+    1.1, Math.round(SEG * 0.5), Math.round(RAD * 0.7));
+
+  /* ---------- blossoms ---------- */
+  function discSprite(inner, outer) {
+    var c = document.createElement("canvas");
+    c.width = c.height = 64;
+    var g = c.getContext("2d");
+    var grd = g.createRadialGradient(32, 32, 0, 32, 32, 32);
+    grd.addColorStop(0, inner);
+    grd.addColorStop(1, outer);
+    g.fillStyle = grd;
+    g.fillRect(0, 0, 64, 64);
+    return new THREE.CanvasTexture(c);
+  }
+  var blossomGeo = new THREE.BufferGeometry();
+  blossomGeo.setAttribute("position", new THREE.BufferAttribute(new Float32Array(blossomPos), 3));
+  var blossoms = new THREE.Points(blossomGeo, new THREE.PointsMaterial({
+    size: 0.22,
+    map: discSprite("rgba(255,255,252,1)", "rgba(238,243,226,0)"),
+    transparent: true, opacity: 0.95, depthWrite: false, sizeAttenuation: true
+  }));
+  scene.add(blossoms);
+
+  /* ---------- luminous fog dome behind the branches ---------- */
+  var domeTex = (function () {
+    var c = document.createElement("canvas");
+    c.width = 256; c.height = 128;
+    var g = c.getContext("2d");
+    var grd = g.createRadialGradient(128, 100, 8, 128, 100, 110);
+    grd.addColorStop(0, "rgba(236,242,220,0.55)");
+    grd.addColorStop(0.5, "rgba(220,230,200,0.22)");
+    grd.addColorStop(1, "rgba(220,230,200,0)");
+    g.fillStyle = grd;
+    g.fillRect(0, 0, 256, 128);
+    return new THREE.CanvasTexture(c);
+  })();
+  var domeMat = new THREE.SpriteMaterial({
+    map: domeTex, transparent: true, opacity: 0.55,
+    blending: THREE.AdditiveBlending, depthWrite: false, fog: false
+  });
+  var dome = new THREE.Sprite(domeMat);
+  dome.position.set(0, 0.5, -21);
+  dome.scale.set(64, 30, 1);
+  scene.add(dome);
+
+  /* ---------- ground swell in the fog ---------- */
+  var gGeo = new THREE.PlaneGeometry(160, 90, 48, 30);
+  gGeo.rotateX(-Math.PI / 2);
+  var gp = gGeo.attributes.position;
+  for (var gi = 0; gi < gp.count; gi++) {
+    gp.setY(gi, n3(gp.getX(gi) * 0.08, 0, gp.getZ(gi) * 0.08) * 2.4 - 13.5);
+  }
+  gGeo.computeVertexNormals();
+  var ground = new THREE.Mesh(gGeo, new THREE.MeshLambertMaterial({ color: 0x46543a, fog: true }));
+  scene.add(ground);
+
+  /* ---------- particles: spores + fireflies ---------- */
+  var P = isMobile ? 420 : 950;
+  var pGeo = new THREE.BufferGeometry();
+  var pPos = new Float32Array(P * 3);
+  var pVel = new Float32Array(P * 3);
+  var pPhase = new Float32Array(P);
+  for (var j = 0; j < P; j++) {
+    pPos[j * 3]     = (Math.random() - 0.5) * 70;
+    pPos[j * 3 + 1] = -8 + Math.random() * 15;
+    pPos[j * 3 + 2] = -24 + Math.random() * 36;
+    pPhase[j] = Math.random() * Math.PI * 2;
+  }
+  pGeo.setAttribute("position", new THREE.BufferAttribute(pPos, 3));
+  var spores = new THREE.Points(pGeo, new THREE.PointsMaterial({
+    size: 0.16,
+    map: discSprite("rgba(255,255,250,0.95)", "rgba(255,255,250,0)"),
+    transparent: true, opacity: 0.65, depthWrite: false, sizeAttenuation: true
+  }));
+  scene.add(spores);
+
+  var F = isMobile ? 8 : 16;
+  var fGeo = new THREE.BufferGeometry();
+  var fPos = new Float32Array(F * 3);
+  for (var fj = 0; fj < F; fj++) {
+    fPos[fj * 3] = (Math.random() - 0.5) * 40;
+    fPos[fj * 3 + 1] = -4 + Math.random() * 8;
+    fPos[fj * 3 + 2] = -16 + Math.random() * 22;
+  }
+  fGeo.setAttribute("position", new THREE.BufferAttribute(fPos, 3));
+  var flies = new THREE.Points(fGeo, new THREE.PointsMaterial({
+    size: 0.5,
+    map: discSprite("rgba(255,236,170,1)", "rgba(227,193,79,0)"),
+    transparent: true, opacity: 0.9, depthWrite: false,
+    blending: THREE.AdditiveBlending, sizeAttenuation: true
+  }));
+  scene.add(flies);
+
+  /* ---------- butterfly: shaped wings (forewing + hindwing), V-perch pose ---------- */
+  var butterfly = new THREE.Group();
+  function wingShape() {
+    var s = new THREE.Shape();
+    s.moveTo(0, 0.05);
+    s.bezierCurveTo(0.28, 0.36, 0.68, 0.30, 0.62, 0.02);    // forewing (large upper lobe)
+    s.bezierCurveTo(0.58, -0.10, 0.40, -0.12, 0.28, -0.08); // inner notch
+    s.bezierCurveTo(0.46, -0.26, 0.22, -0.42, 0.05, -0.22); // hindwing (small lower lobe)
+    s.lineTo(0, -0.06);
+    s.closePath();
+    return s;
+  }
+  var wingGeo = new THREE.ShapeGeometry(wingShape(), 14);
+  wingGeo.rotateX(-Math.PI / 2);   // lay the wing flat (shape Y -> world Z)
+  var wingMat = new THREE.MeshBasicMaterial({ color: 0xdfe75a, side: THREE.DoubleSide, transparent: true, opacity: 0.96 });
+  var wingInMat = new THREE.MeshBasicMaterial({ color: 0xb2bf45, side: THREE.DoubleSide, transparent: true, opacity: 0.96 });
+  function makeWing(sideSign) {
+    var pivot = new THREE.Group();
+    var outer = new THREE.Mesh(wingGeo, wingMat);
+    var inner = new THREE.Mesh(wingGeo, wingInMat);   // darker inner pattern
+    inner.scale.set(0.55, 1, 0.55);
+    inner.position.y = 0.004;
+    pivot.add(outer); pivot.add(inner);
+    pivot.scale.x = sideSign;                          // mirror for the right wing
+    butterfly.add(pivot);
+    return pivot;
+  }
+  var wingL = makeWing(1), wingR = makeWing(-1);
+  var bodyMatB = new THREE.MeshBasicMaterial({ color: 0x33381f });
+  var bodyB = new THREE.Mesh(new THREE.CylinderGeometry(0.026, 0.04, 0.42, 6), bodyMatB);
+  bodyB.rotation.x = Math.PI / 2;
+  butterfly.add(bodyB);
+  var antGeo = new THREE.CylinderGeometry(0.006, 0.006, 0.2, 4);
+  var antL = new THREE.Mesh(antGeo, bodyMatB);
+  antL.position.set(0.05, 0.08, -0.22); antL.rotation.set(-0.7, 0, -0.35);
+  var antR = new THREE.Mesh(antGeo, bodyMatB);
+  antR.position.set(-0.05, 0.08, -0.22); antR.rotation.set(-0.7, 0, 0.35);
+  butterfly.add(antL, antR);
+  butterfly.position.set(-16, 6, 3);
+  var prevBP = butterfly.position.clone();
+  scene.add(butterfly);
+
+  // perch on the crest of the main arc
+  var perch = mainCurve.getPoint(0.47).clone();
+  perch.y += 1.85;
+
+  var hoverBall = new THREE.Mesh(new THREE.SphereGeometry(1.4, 8, 8),
+    new THREE.MeshBasicMaterial({ visible: false }));
+  scene.add(hoverBall);
+
+  var B = { state: "toPerch", t: 0, dur: 6.5, from: butterfly.position.clone(),
+            ctrl: new THREE.Vector3(-6, 8, 0), to: perch.clone(), stateTime: 0 };
+  function bezier(a, c, b2p, t, out) {
+    var it = 1 - t;
+    out.set(
+      it * it * a.x + 2 * it * t * c.x + t * t * b2p.x,
+      it * it * a.y + 2 * it * t * c.y + t * t * b2p.y,
+      it * it * a.z + 2 * it * t * c.z + t * t * b2p.z);
+    return out;
+  }
+  function flyTo(target, dur) {
+    B.from.copy(butterfly.position);
+    B.to.copy(target);
+    B.ctrl.set(
+      (B.from.x + B.to.x) / 2 + (Math.random() - 0.5) * 8,
+      Math.max(B.from.y, B.to.y) + 2.5 + Math.random() * 3,
+      (B.from.z + B.to.z) / 2 + (Math.random() - 0.5) * 5);
+    B.t = 0; B.dur = dur;
+  }
+  function flee() {
+    if (B.state === "flee") return;
+    B.state = "flee";
+    flyTo(new THREE.Vector3(
+      butterfly.position.x + (Math.random() < 0.5 ? -1 : 1) * (7 + Math.random() * 6),
+      5 + Math.random() * 4,
+      butterfly.position.z + (Math.random() - 0.5) * 7), 2.4);
+  }
+  if (reduced) { butterfly.position.copy(perch); B.state = "perched"; }
+
+  /* ---------- pointer ---------- */
+  var mouse = { x: 0, y: 0 };
+  var mouseWorld = new THREE.Vector3(0, 2, 0);
+  var ray = new THREE.Raycaster();
+  var ndc = new THREE.Vector2();
+  var magnetPlane = new THREE.Plane(new THREE.Vector3(0, 0, 1), 4);
+  function onPointer(cx, cy) {
+    mouse.x = (cx / window.innerWidth) * 2 - 1;
+    mouse.y = -((cy / window.innerHeight) * 2 - 1);
+    ndc.set(mouse.x, mouse.y);
+    ray.setFromCamera(ndc, camera);
+    var hitP = new THREE.Vector3();
+    if (ray.ray.intersectPlane(magnetPlane, hitP)) mouseWorld.copy(hitP);
+    if (ray.intersectObject(hoverBall).length > 0 &&
+        (B.state === "perched" || B.state === "toPerch")) flee();
+  }
+  window.addEventListener("mousemove", function (e) { onPointer(e.clientX, e.clientY); }, { passive: true });
+  window.addEventListener("touchmove", function (e) {
+    if (e.touches.length) onPointer(e.touches[0].clientX, e.touches[0].clientY);
+  }, { passive: true });
+  window.addEventListener("touchstart", function (e) {
+    if (e.touches.length) onPointer(e.touches[0].clientX, e.touches[0].clientY);
+  }, { passive: true });
+
+  var cards = Array.prototype.slice.call(document.querySelectorAll(".card[data-depth]"));
+
+  /* ---------- controls ---------- */
+  var motionOn = !reduced;
+  var partOn = true;
+  var wireHold = false; // keep wireframe visible permanently
+  function scanPulse() { uni.uScanStart.value = clockT; }
+  function bindCtl(id, fn) { document.getElementById(id).addEventListener("click", fn); }
+  bindCtl("ctlScan", function () { scanPulse(); });
+  bindCtl("ctlWire", function () {
+    wireHold = !wireHold;
+    this.setAttribute("aria-pressed", String(wireHold));
+    if (wireHold) scanPulse();
+  });
+  bindCtl("ctlPart", function () {
+    partOn = !partOn;
+    spores.visible = partOn; flies.visible = partOn;
+    this.setAttribute("aria-pressed", String(partOn));
+  });
+  bindCtl("ctlMotion", function () {
+    motionOn = !motionOn;
+    this.setAttribute("aria-pressed", String(motionOn));
+  });
+
+  /* ---------- reveal ---------- */
+  var revealing = false;
+  function startReveal() {
+    revealing = true;
+    scanPulse();
+    setTimeout(scanPulse, 3000);
+  }
+  sceneAPI.startReveal = startReveal;
+  if (sceneAPI.pendingReveal) startReveal();
+
+  /* ---------- fade fixed UI past the hero ---------- */
+  var ctlBox = document.querySelector(".controls");
+  var hintBox = document.querySelector(".hint");
+  function onScroll() {
+    var past = window.scrollY > window.innerHeight * 0.55;
+    var op = past ? "0" : "1", pe = past ? "none" : "auto";
+    if (ctlBox) { ctlBox.style.opacity = op; ctlBox.style.pointerEvents = pe; ctlBox.style.transition = "opacity 0.3s ease"; }
+    if (hintBox) { hintBox.style.opacity = op; hintBox.style.transition = "opacity 0.3s ease"; }
+  }
+  window.addEventListener("scroll", onScroll, { passive: true });
+
+  window.addEventListener("resize", function () {
+    camera.aspect = window.innerWidth / window.innerHeight;
+    camera.updateProjectionMatrix();
+    renderer.setSize(window.innerWidth, window.innerHeight);
+  });
+
+  /* ---------- main loop ---------- */
+  var clock = new THREE.Clock();
+  var clockT = 0;
+  var autoScanEvery = 15;
+  var lastAuto = 4;
+  var tmpV = new THREE.Vector3();
+
+  function frame() {
+    requestAnimationFrame(frame);
+    if (document.hidden) return;
+    var dt = Math.min(clock.getDelta(), 0.05);
+    if (!motionOn) dt = 0;
+    clockT += dt;
+    uni.uTime.value = clockT;
+
+    if (revealing && uni.uReveal.value < 160) uni.uReveal.value += dt * 30;
+    // wireframe (x-ray) mode eases in/out
+    uni.uWireHold.value += ((wireHold ? 1 : 0) - uni.uWireHold.value) * 0.06;
+    // periodic ambient scan (more frequent in wireframe mode)
+    if (clockT - lastAuto > (wireHold ? 6 : autoScanEvery)) { lastAuto = clockT; scanPulse(); }
+
+    // camera: gentle dolly-in while leaving the page
+    if (leaving) camBase.z += (13.2 - camBase.z) * 0.05;
+
+    // camera parallax
+    var tx = camBase.x + mouse.x * (isMobile ? 1.0 : 2.0);
+    var ty = camBase.y + mouse.y * 0.9;
+    camera.position.x += (tx - camera.position.x) * 0.045;
+    camera.position.y += (ty - camera.position.y) * 0.045;
+    camera.position.z = camBase.z;
+    camera.lookAt(camLook);
+
+    // spores drift + pointer magnet
+    if (partOn) {
+      var arr = pGeo.attributes.position.array;
+      for (var k = 0; k < P; k++) {
+        var ix = k * 3;
+        pVel[ix]     += Math.sin(clockT * 0.3 + pPhase[k]) * 0.0011;
+        pVel[ix + 1] += 0.00035 + Math.cos(clockT * 0.42 + pPhase[k] * 1.3) * 0.0008; // gentle updraft
+        pVel[ix + 2] += Math.sin(clockT * 0.24 + pPhase[k] * 0.7) * 0.0009;
+        var dx = mouseWorld.x - arr[ix], dy = mouseWorld.y - arr[ix + 1], dz = mouseWorld.z - arr[ix + 2];
+        var d2 = dx * dx + dy * dy + dz * dz;
+        if (d2 < 120 && d2 > 0.5) {
+          var f = 0.045 / d2;
+          pVel[ix] += dx * f; pVel[ix + 1] += dy * f; pVel[ix + 2] += dz * f;
+        }
+        pVel[ix] *= 0.966; pVel[ix + 1] *= 0.966; pVel[ix + 2] *= 0.966;
+        arr[ix] += pVel[ix]; arr[ix + 1] += pVel[ix + 1]; arr[ix + 2] += pVel[ix + 2];
+        if (arr[ix] > 38) arr[ix] = -38; else if (arr[ix] < -38) arr[ix] = 38;
+        if (arr[ix + 1] > 9) arr[ix + 1] = -8; else if (arr[ix + 1] < -9) arr[ix + 1] = 8;
+        if (arr[ix + 2] > 14) arr[ix + 2] = -24; else if (arr[ix + 2] < -26) arr[ix + 2] = 12;
+      }
+      pGeo.attributes.position.needsUpdate = true;
+      // fireflies wander
+      var fa = fGeo.attributes.position.array;
+      for (var fk = 0; fk < F; fk++) {
+        var fx = fk * 3;
+        fa[fx]     += Math.sin(clockT * 0.7 + fk * 2.1) * 0.012;
+        fa[fx + 1] += Math.cos(clockT * 0.9 + fk * 1.3) * 0.008;
+        fa[fx + 2] += Math.sin(clockT * 0.5 + fk * 3.7) * 0.01;
+      }
+      fGeo.attributes.position.needsUpdate = true;
+    }
+
+    // butterfly wings: held up in a V while perched, full beats in flight
+    var flapBase = (B.state === "perched") ? 1.0 : 0.15;
+    var flapAmp  = (B.state === "perched") ? 0.16 : 0.95;
+    var flapSpd  = (B.state === "perched") ? 2.6 : 20;
+    var flap = flapBase + Math.sin(clockT * flapSpd) * flapAmp;
+    wingL.rotation.z = flap;
+    wingR.rotation.z = flap;   // right pivot is mirrored, same angle = symmetric beat
+    B.stateTime += dt;
+    if (B.state === "toPerch" || B.state === "flee" || B.state === "wander") {
+      B.t += dt / B.dur;
+      var tt = Math.min(B.t, 1);
+      var e = tt * tt * (3 - 2 * tt);
+      bezier(B.from, B.ctrl, B.to, e, tmpV);
+      butterfly.position.copy(tmpV);
+      if (B.t >= 1) {
+        if (B.state === "toPerch") { B.state = "perched"; B.stateTime = 0; }
+        else if (B.state === "flee") {
+          B.state = "wander"; B.stateTime = 0;
+          flyTo(new THREE.Vector3(-9 + Math.random() * 5, 4 + Math.random() * 4, -4 + Math.random() * 7), 5);
+        } else { B.state = "toPerch"; flyTo(perch, 5.5); }
+      }
+    } else if (B.state === "perched") {
+      butterfly.position.lerp(perch, 0.08);
+      butterfly.position.y = perch.y + Math.sin(clockT * 2.0) * 0.05;
+      if (B.stateTime > 15) { B.state = "wander"; flyTo(new THREE.Vector3(-8, 6, 0), 5); }
+    }
+    // face the travel direction, bank into turns, flutter-bob in flight
+    var bvx = butterfly.position.x - prevBP.x, bvz = butterfly.position.z - prevBP.z;
+    if (B.state !== "perched") {
+      butterfly.position.y += Math.sin(clockT * 9) * 0.04;   // flutter bob
+      if (bvx * bvx + bvz * bvz > 0.000001) {
+        var yaw = Math.atan2(bvx, bvz) + Math.PI;
+        var dyaw = yaw - butterfly.rotation.y;
+        while (dyaw > Math.PI) dyaw -= Math.PI * 2;
+        while (dyaw < -Math.PI) dyaw += Math.PI * 2;
+        butterfly.rotation.y += dyaw * 0.12;
+        var bank = Math.max(-0.55, Math.min(0.55, -dyaw * 2.4));
+        butterfly.rotation.x += (bank * 0.3 - butterfly.rotation.x) * 0.1;
+      }
+    } else {
+      butterfly.rotation.x += (0 - butterfly.rotation.x) * 0.08;
+      butterfly.rotation.y += (Math.sin(clockT * 0.4) * 0.3 - butterfly.rotation.y) * 0.03;
+    }
+    prevBP.copy(butterfly.position);
+    hoverBall.position.copy(butterfly.position);
+
+    // fog dome breathes
+    domeMat.opacity = 0.5 + Math.sin(clockT * 0.5) * 0.08;
+
+    // card parallax
+    for (var ci = 0; ci < cards.length; ci++) {
+      var depth = parseFloat(cards[ci].getAttribute("data-depth")) || 20;
+      cards[ci].style.transform = "translate3d(" + (-mouse.x * depth * 0.4) + "px," + (mouse.y * depth * 0.4) + "px,0)";
+    }
+
+    renderer.render(scene, camera);
+  }
+  frame();
+
+  /* tiny debug/integration hook (safe to remove) */
+  window.__ADIL = {
+    scanPulse: scanPulse,
+    state: function () { return B.state; },
+    butterfly: butterfly,
+    perch: perch,
+    camera: camera
+  };
+})();
+
+</script>
 </body>
 </html>

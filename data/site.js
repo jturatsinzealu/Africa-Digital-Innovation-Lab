@@ -1,5 +1,5 @@
 /* ============================================================
-   SITE-WIDE SETTINGS — edit this file to change identity/contact
+   SITE-WIDE SETTINGS, edit this file to change identity/contact
    ============================================================ */
 window.SITE = {
   labShortName: "ADIL",
@@ -9,9 +9,9 @@ window.SITE = {
   university: "African Leadership University",
   universityShort: "ALU",
   campus: "Rwanda Campus",
-  department: "BSE — Software Engineering",
+  department: "BSE Software Engineering",
   address: "Bumbogo, Kigali Innovation City, Kigali, Rwanda",
-  email: "jturatsinze@alueducation.cn", // NOTE: verify — ALU addresses are usually @alueducation.com
+  email: "jturatsinze@alueducation.cn", // NOTE: verify, ALU addresses are usually @alueducation.com
   logo: "assets/img/alu-logo.png",
   // Navigation (order controls the menu)
   nav: [

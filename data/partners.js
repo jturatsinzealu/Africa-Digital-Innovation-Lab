@@ -1,5 +1,5 @@
 /* ============================================================
-   PARTNERS — grouped by category.
+   PARTNERS, grouped by category.
    IMPORTANT: entries below are drawn from the lab's strategy
    workbook as PROSPECTIVE partners. The disclaimer on the page
    states that engagement is in progress; move entries to
@@ -12,7 +12,7 @@ window.PARTNERS = {
     {
       category: "Universities & Research Groups",
       items: [
-        { name: "African Leadership University (home institution)", note: "BSE — Software Engineering, Rwanda Campus", confirmed: true },
+        { name: "African Leadership University (home institution)", note: "BSE Software Engineering, Rwanda Campus", confirmed: true },
         { name: "Makerere University AI Lab", note: "Sister-lab mentorship; NLP, agriculture and health AI", confirmed: false },
         { name: "Responsible AI Lab (RAIL), KNUST", note: "Responsible-AI methods and network", confirmed: false },
         { name: "CMU-Africa (Kigali)", note: "Same-city co-supervision and seminars", confirmed: false },
@@ -44,7 +44,7 @@ window.PARTNERS = {
     {
       category: "NGOs & Development Organisations",
       items: [
-        { name: "GIZ Rwanda — FAIR Forward", note: "Open AI training data and responsible AI", confirmed: false },
+        { name: "GIZ Rwanda, FAIR Forward", note: "Open AI training data and responsible AI", confirmed: false },
         { name: "UNICEF Rwanda / WFP Innovation Accelerator", note: "EdTech and food-security pilots", confirmed: false },
         { name: "Partners In Health / UGHE ecosystem", note: "Health-equity research culture", confirmed: false }
       ]
@@ -52,9 +52,9 @@ window.PARTNERS = {
     {
       category: "Funding Organisations (engagement targets)",
       items: [
-        { name: "IDRC — AI4D Programme", note: "Institutional lab and project grants", confirmed: false },
+        { name: "IDRC, AI4D Programme", note: "Institutional lab and project grants", confirmed: false },
         { name: "Lacuna Fund", note: "African dataset-creation grants", confirmed: false },
-        { name: "Bill & Melinda Gates Foundation — Grand Challenges", note: "Health and agriculture innovation", confirmed: false },
+        { name: "Bill & Melinda Gates Foundation, Grand Challenges", note: "Health and agriculture innovation", confirmed: false },
         { name: "Mastercard Foundation", note: "Education and youth employment in Africa", confirmed: false },
         { name: "Science for Africa Foundation", note: "African-led health innovation", confirmed: false },
         { name: "Google.org / Mozilla Foundation", note: "AI for social good; voice data", confirmed: false }
